@@ -1,12 +1,12 @@
-import "./App.css";
-
+import { Header } from "./components";
+import { AnimatePresence } from "framer-motion";
 function App() {
   return (
-    <div className="App">
-      <h1 className="w-screen h-screen flex justify-center text-center">
-        Welcome
-      </h1>
-    </div>
+    <AnimatePresence>
+      <div className="w-screen h-auto flex flex-col bg-primary">
+        <Header />
+      </div>
+    </AnimatePresence>
   );
 }
 
