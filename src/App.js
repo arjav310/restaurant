@@ -1,11 +1,9 @@
-import { Header } from "./components";
 import { AnimatePresence } from "framer-motion";
+import Root from "./components/Root";
 function App() {
   return (
     <AnimatePresence>
-      <div className="w-screen h-auto flex flex-col bg-primary">
-        <Header />
-      </div>
+      <Root />
     </AnimatePresence>
   );
 }

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext, useState } from "react";
 import Logo from "../img/logo.png";
 import { MdShoppingCart } from "react-icons/md";
 import Avatar from "../img/avatar.png";
@@ -6,13 +6,16 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { app } from "../firbase.config";
+import { GlobalContext } from "./Root";
 
 const Header = () => {
+  const globalContext = useContext(GlobalContext);
+
   const firebaseAuth = getAuth(app);
   const authProvider = new GoogleAuthProvider();
   const login = async () => {
     const response = await signInWithPopup(firebaseAuth, authProvider);
-    console.log(response);
+    globalContext.setUser(response.user.providerData[0]);
   };
 
   return (
