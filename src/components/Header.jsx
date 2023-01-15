@@ -1,13 +1,13 @@
 import React, { useContext, useState } from "react";
-import Logo from "../img/logo.png";
+import Logo from "../assets/img/logo.png";
 import { MdOutlineShoppingCart, MdAdd, MdLogout } from "react-icons/md";
-import Avatar from "../img/avatar.png";
+import Avatar from "../assets/img/avatar.png";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { app } from "../firbase.config";
 import { GlobalContext } from "./Root";
-import "./header.css";
+import "../assets/css/header.css";
 
 const Header = () => {
   const globalContext = useContext(GlobalContext);
@@ -35,10 +35,10 @@ const Header = () => {
   const [isNavOpen, setIsNavOpen] = useState(false);
 
   return (
-    <header className="fixed z-50 w-screen p-6 px-8 md:p-6 md:px-16">
+    <header className="fixed z-50 w-screen p-4 px-8 md:p-4 md:px-16 bg-primary shadow-sm">
       {/* desktop & tablet */}
-      <div className="hidden md:flex w-full h-full item-center justify-between">
-        <Link to={"/"} className="flex items-center gap-2 cursor-pointer">
+      <div className="hidden md:flex w-full h-full item-center justify-between drop-shadow-sm">
+        <Link to={"/home"} className="flex items-center gap-2 cursor-pointer">
           <img className="w-8 object-cover" src={Logo} alt="logo" />
           <h3 className="text-headingColor text-xl font-bold">City</h3>
         </Link>
@@ -66,7 +66,7 @@ const Header = () => {
               <div className="relative">
                 <motion.img
                   whileTap={{ scale: 0.9 }}
-                  className="w-10 min-w-[40px] h-10 min-h-[40px] drop-shadow-xl rounded-full"
+                  className="w-10 min-w-[40px] h-10 min-h-[40px] drop-shadow-md rounded-full"
                   src={
                     localStorage.getItem("user") != null
                       ? userData.photoURL
@@ -109,8 +109,9 @@ const Header = () => {
         </div>
       </div>
       {/* mobile */}
+
       <div className="flex md:hidden w-full h-full item-center justify-between">
-        <section className="flex items-center md:hidden">
+        <section className="MOBILE-MENU flex items-center md:hidden">
           <div
             className="HAMBURGER-ICON space-y-2"
             onClick={() => setIsNavOpen((prev) => !prev)}
@@ -164,7 +165,7 @@ const Header = () => {
         <div className="relative">
           <motion.img
             whileTap={{ scale: 0.9 }}
-            className="w-10 min-w-[40px] h-10 min-h-[40px] drop-shadow-xl rounded-full"
+            className="w-10 min-w-[40px] h-10 min-h-[40px] drop-shadow-md  rounded-full"
             src={
               localStorage.getItem("user") != null ? userData.photoURL : Avatar
             }
