@@ -9,15 +9,14 @@ const GlobalContext = createContext();
 
 const Root = () => {
   const [user, setUser] = useState();
-  console.log(user);
   return (
     <GlobalContext.Provider value={{ user, setUser }}>
-      <AnimatePresence exitBeforeEnter>
+      <AnimatePresence mode="wait">
         <BrowserRouter>
           <div className="w-screen h-auto flex flex-col bg-primary">
             <Header />
 
-            <main className="mt-20 px-8 md:px-16 py-4 w-full">
+            <main className="mt-16 px-8 md:px-16 py-4 w-full ">
               <Routes>
                 <Route path="/*" element={<MainContainer />} />
                 <Route path="/createItem" element={<CreateItem />} />

@@ -12,13 +12,13 @@ import "../assets/css/header.css";
 const Header = () => {
   const globalContext = useContext(GlobalContext);
   const [showMenu, setShowMenu] = useState(false);
+  const [isNavOpen, setIsNavOpen] = useState(false);
 
   const firebaseAuth = getAuth(app);
   const authProvider = new GoogleAuthProvider();
   const login = async () => {
     if (localStorage.getItem("user") === null) {
       await signInWithPopup(firebaseAuth, authProvider).then((res) => {
-        console.log(res);
         globalContext.setUser(res.user.providerData[0]);
         localStorage.setItem("user", JSON.stringify(res.user.providerData[0]));
       });
@@ -26,28 +26,31 @@ const Header = () => {
       setShowMenu(!showMenu);
     }
   };
+
   let userData = JSON.parse(localStorage.getItem("user"));
+
   const handleLogout = () => {
     localStorage.clear();
     setShowMenu(!showMenu);
   };
 
-  const [isNavOpen, setIsNavOpen] = useState(false);
-
   return (
-    <header className="fixed z-50 w-screen p-4 px-8 md:p-4 md:px-16 bg-primary shadow-sm">
+    <header className="fixed z-50 w-screen p-4 px-8 md:p-4 md:px-16 3xl:px-32 bg-primary shadow-sm">
       {/* desktop & tablet */}
       <div className="hidden md:flex w-full h-full item-center justify-between drop-shadow-sm">
-        <Link to={"/home"} className="flex items-center gap-2 cursor-pointer">
+        <Link to={"/"} className="flex items-center gap-2 cursor-pointer">
           <img className="w-8 object-cover" src={Logo} alt="logo" />
           <h3 className="text-headingColor text-xl font-bold">City</h3>
         </Link>
         <div>
           <div className="flex items-center gap-8">
             <ul className="flex items-center gap-8">
-              <li className="text-base text-textColor hover:text-cartNumBg duration-100 transition-all ease-in-out cursor-pointer">
+              <Link
+                to={"/home"}
+                className="text-base text-textColor hover:text-cartNumBg duration-100 transition-all ease-in-out cursor-pointer"
+              >
                 Home
-              </li>
+              </Link>
               <li className="text-base text-textColor hover:text-cartNumBg duration-100 transition-all ease-in-out cursor-pointer">
                 Menu
               </li>
@@ -63,10 +66,11 @@ const Header = () => {
                   <span className="text-white font-semibold text-xs">2</span>
                 </div>
               </div>
-              <div className="relative">
+              <div className="relative dropdown">
                 <motion.img
                   whileTap={{ scale: 0.9 }}
-                  className="w-10 min-w-[40px] h-10 min-h-[40px] drop-shadow-md rounded-full"
+                  id="dropdownDefaultButton"
+                  className="w-10 min-w-[40px] h-10 min-h-[40px] drop-shadow-md rounded-full cursor-pointer dropdown-toggle"
                   src={
                     localStorage.getItem("user") != null
                       ? userData.photoURL
@@ -79,16 +83,17 @@ const Header = () => {
                   }
                   onClick={login}
                 />
+
                 {showMenu && (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.1 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.2 }}
-                    className="w-40 bg-gray-50 shadow-lg flex flex-col absolute top-11 right-0"
+                    className="w-40 bg-gray-50 shadow-lg flex flex-col absolute top-11 right-0 rounded-lg dropdown-menu"
                   >
                     <Link
                       to={"/createItem"}
-                      className="p-3 rounded-t-lg flex items-center justify-center gap-3 cursor-pointer bg-gray-100  hover:bg-cartNumBg hover:text-white transition-all duration-100 ease-in-out text-textColor text-base"
+                      className="p-3 flex rounded-t-lg items-center justify-center gap-3 cursor-pointer bg-gray-100  hover:bg-cartNumBg hover:text-white transition-all duration-100 ease-in-out text-textColor text-base"
                       onClick={() => {
                         setShowMenu(!showMenu);
                       }}
@@ -98,6 +103,7 @@ const Header = () => {
                     <Link
                       className="p-3 rounded-b-lg flex items-center justify-center gap-3 cursor-pointer bg-gray-100 hover:bg-cartNumBg hover:text-white transition-all duration-100 ease-in-out text-textColor text-base"
                       onClick={handleLogout}
+                      to={"/"}
                     >
                       LogOut <MdLogout className="text-xl" />
                     </Link>
@@ -140,7 +146,7 @@ const Header = () => {
             </div>
             <ul className="MENU-LINK-MOBILE-OPEN flex flex-col items-center justify-between min-h-[250px]">
               <Link
-                to={"/"}
+                to={"/home"}
                 onClick={() => setIsNavOpen((prev) => !prev)}
                 className="text-base text-textColor hover:text-cartNumBg duration-100 transition-all ease-in-out cursor-pointer"
               >
@@ -195,6 +201,7 @@ const Header = () => {
               <Link
                 className="p-3 rounded-b-lg flex items-center justify-center gap-3 cursor-pointer bg-gray-100 hover:bg-cartNumBg hover:text-white transition-all duration-100 ease-in-out text-textColor text-base"
                 onClick={handleLogout}
+                to={"/"}
               >
                 LogOut <MdLogout className="text-xl" />
               </Link>
@@ -203,9 +210,9 @@ const Header = () => {
         </div>
         <section
           id="bottom-navigation"
-          class="block fixed inset-x-0 bottom-0 z-10 bg-gray-100 shadow p-2"
+          className="block fixed inset-x-0 bottom-0 z-10 bg-gray-100 shadow p-2"
         >
-          <div id="tabs" class="flex justify-center h-10">
+          <div id="tabs" className="flex justify-center h-10">
             <div className="flex items-center justify-center">
               <MdOutlineShoppingCart className="text-textColor text-3xl cursor-pointer" />
               <div className="w-6 h-6 rounded-full bg-cartNumBg flex items-center justify-center">
