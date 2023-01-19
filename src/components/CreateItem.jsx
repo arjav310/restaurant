@@ -161,7 +161,7 @@ const CreateItem = () => {
             onChange={(e) => {
               setCategory(e.target.value);
             }}
-            className="outline-none w-full text-base border-b-2 border-gray-200 p-2 rounded-md cursor-pointer p-2"
+            className="outline-none w-full text-base border-b-2 border-gray-200 rounded-md cursor-pointer p-2"
           >
             <option value="" className="bg-white">
               Select Category
