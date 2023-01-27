@@ -2,7 +2,7 @@ import React from "react";
 
 const Loader = () => {
   return (
-    <div>
+    <div className="w-full">
       <div role="status">
         <svg
           aria-hidden="true"
@@ -20,7 +20,6 @@ const Loader = () => {
             fill="currentFill"
           />
         </svg>
-        <span className="sr-only">Loading...</span>
       </div>
     </div>
   );

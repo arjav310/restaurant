@@ -10,36 +10,39 @@ import {
   MdAttachMoney,
 } from "react-icons/md";
 import Loader from "./Loader";
-import {
-  deleteObject,
-  getDownloadURL,
-  ref,
-  uploadBytesResumable,
-} from "firebase/storage";
+import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 import { storage } from "../firbase.config";
 import { saveItem } from "../utils/firebaseFunctions";
+import { useEffect } from "react";
 
 const CreateItem = () => {
   const [title, setTitle] = useState("");
   const [calories, setCalories] = useState("");
   const [price, setPrice] = useState("");
   const [category, setCategory] = useState(null);
-  const [imageAsset, setImageAsset] = useState(null);
+  const [selectedImg, setSelectedImg] = useState(null);
+  const [imageAsset, setImageAsset] = useState("");
   const [alert, setAlert] = useState(false);
   const [alertStatus, setAlertStatus] = useState("danger");
   const [msg, setMsg] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [progress, setProgress] = useState();
 
-  const uploadImage = (e) => {
+  const validate = () => {
+    return title.length && price.length;
+  };
+
+  const uploadImage = () => {
     setIsLoading(true);
-    const imageFile = e.target.files[0];
+    const imageFile = selectedImg;
     const storageRef = ref(storage, `Images/${Date.now()}-${imageFile.name}`);
     const uploadTask = uploadBytesResumable(storageRef, imageFile);
     uploadTask.on(
       `state_changed`,
       (snapshot) => {
-        // const uploadProgress =
-        //   (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        const uploadProgress =
+          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        setProgress(Math.floor(uploadProgress));
       },
       (error) => {
         console.log(error);
@@ -49,7 +52,7 @@ const CreateItem = () => {
         setTimeout(() => {
           setAlert(false);
           setIsLoading(false);
-        }, 4000);
+        }, 2000);
       },
       () => {
         getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
@@ -60,7 +63,7 @@ const CreateItem = () => {
           setAlertStatus("success");
           setTimeout(() => {
             setAlert(false);
-          }, 4000);
+          }, 2000);
         });
       }
     );
@@ -68,65 +71,91 @@ const CreateItem = () => {
 
   const deleteImage = () => {
     setIsLoading(true);
-    const deleteRef = ref(storage, imageAsset);
-    deleteObject(deleteRef).then(() => {
-      setImageAsset(null);
-      setIsLoading(false);
-      setAlert(true);
-      setMsg("Image deleted successfully");
-      setAlertStatus("success");
-      setTimeout(() => {
-        setAlert(false);
-      }, 4000);
-    });
+    setSelectedImg(null);
+    setIsLoading(false);
   };
 
   const saveDetails = () => {
     setIsLoading(true);
-    try {
-      if (!title || !calories || !imageAsset || !price || !category) {
+    uploadImage();
+  };
+
+  useEffect(() => {
+    if (!imageAsset) {
+      return;
+    } else {
+      try {
+        if (!title || !calories || !selectedImg || !price || !category) {
+          setAlert(true);
+          setMsg("Required fields can't be empty");
+          setAlertStatus("danger");
+          setTimeout(() => {
+            setAlert(false);
+            setIsLoading(false);
+          }, 2000);
+        } else {
+          setIsLoading(true);
+          const data = {
+            id: `${Date.now()}`,
+            title: title,
+            imageURL: imageAsset,
+            category: category,
+            calories: calories,
+            qty: 1,
+            price: price,
+          };
+          saveItem(data);
+          setIsLoading(false);
+          setAlert(true);
+          setMsg("Data Uploaded successfully");
+          setAlertStatus("success");
+          setTimeout(() => {
+            window.location.reload();
+            setAlert(false);
+          }, 2000);
+        }
+      } catch (error) {
+        console.log(error);
         setAlert(true);
-        setMsg("Required fields can't be empty");
+        setMsg("Error while uploading : Try AGain");
         setAlertStatus("danger");
         setTimeout(() => {
           setAlert(false);
           setIsLoading(false);
-        }, 4000);
-      } else {
-        const data = {
-          id: `${Date.now()}`,
-          title: title,
-          imageURL: imageAsset,
-          category: category,
-          calories: calories,
-          qty: 1,
-          price: price,
-        };
-        saveItem(data);
-        setIsLoading(false);
-        setAlert(true);
-        setMsg("Data Uploaded successfully 😊");
-        setAlertStatus("success");
-        setTimeout(() => {
-          setAlert(false);
-        }, 4000);
-        window.location.reload();
+        }, 2000);
       }
-    } catch (error) {
-      console.log(error);
-      setAlert(true);
-      setMsg("Error while uploading : Try AGain");
-      setAlertStatus("danger");
-      setTimeout(() => {
-        setAlert(false);
-        setIsLoading(false);
-      }, 4000);
+    }
+  }, [imageAsset]);
+
+  const handleDrop = (ev) => {
+    // Prevent default behavior (Prevent file from being opened)
+    ev.preventDefault();
+
+    if (ev.dataTransfer.items) {
+      // Use DataTransferItemList interface to access the file(s)
+      [...ev.dataTransfer.items].forEach((item) => {
+        // If dropped items aren't files, reject them
+        if (
+          (item.kind === "file" && item.type == "image/png") ||
+          item.type == "image/jpg" ||
+          item.type == "image/svg" ||
+          item.type == "image/jpeg"
+        ) {
+          const file = item.getAsFile();
+          setSelectedImg(file);
+        }
+      });
+    } else {
+      // Use DataTransfer interface to access the file(s)
+      [...ev.dataTransfer.files].forEach((file, i) => {
+        console.log(`… file[${i}].name = ${file.name}`);
+      });
     }
   };
 
   return (
     <div className="w-full min-h-screen flex items-center justify-center">
-      <div className="w-[90%] md:w-[50%] border border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center gap-4">
+      <form className="w-[90%] md:w-[50%] border border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center gap-4">
         {alert && (
           <motion.p
             initial={{ opacity: 0 }}
@@ -158,6 +187,7 @@ const CreateItem = () => {
           <select
             name="category"
             id="category"
+            required
             onChange={(e) => {
               setCategory(e.target.value);
             }}
@@ -179,25 +209,54 @@ const CreateItem = () => {
           </select>
         </div>
         {/* upload image */}
-        <div className="group flex justify-center items-center flex-col border-2 border-dotted border-gray-300 w-full h-225 md:h-340 cursor-pointer rounded-lg">
+        <div
+          className="group flex justify-center items-center flex-col border-2 border-dotted border-gray-300 w-full h-225 md:h-340 cursor-pointer rounded-lg"
+          onDragOver={(e) => {
+            e.preventDefault();
+          }}
+          onDrop={(e) => {
+            handleDrop(e);
+          }}
+        >
           {isLoading ? (
-            <Loader />
+            <div className="w-full text-center">
+              <Loader />
+              <div className="p-5 text-center">
+                <div className="w-full bg-gray-200 rounded-full dark:bg-gray-700">
+                  <div
+                    className="bg-cartNumBg text-xs font-medium text-blue-100 p-0.5 leading-none rounded-full"
+                    role="progressbar"
+                    aria-valuenow={progress}
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                    style={{ width: progress + "%" }}
+                  >
+                    {progress}%
+                  </div>
+                </div>
+              </div>
+            </div>
           ) : (
             <>
-              {!imageAsset ? (
+              {!selectedImg ? (
                 <>
                   <label className="w-full h-full flex flex-col items-center justify-center cursor-pointer">
-                    <div className="w-full h-full flex flex-col items-center justify-center gap-2">
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6 cursor-pointer">
                       <MdCloudUpload className="text-gray-500 text-3xl hover:text-gray-700" />
-                      <p className="text-gray-500 hover:text-gray-700">
+                      <p className="mb-2 text-sm text-gray-500 dark:text-gray-400 font-semibold">
                         Click here to upload
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        SVG, PNG, JPG
                       </p>
                     </div>
                     <input
                       type="file"
                       name="uploadimage"
                       accept="image/*"
-                      onChange={uploadImage}
+                      onChange={(e) => {
+                        setSelectedImg(e.target.files[0]);
+                      }}
                       className="w-0 h-0"
                     />
                   </label>
@@ -206,8 +265,8 @@ const CreateItem = () => {
                 <>
                   <div className="relative h-full">
                     <img
-                      src={imageAsset}
-                      alt="uploaded"
+                      src={URL.createObjectURL(selectedImg)}
+                      alt={selectedImg.name}
                       className="w-full h-full object-cover"
                     />
                     <button
@@ -223,13 +282,13 @@ const CreateItem = () => {
             </>
           )}
         </div>
+
         <div className="w-full flex flex-col md:flex-row items-center gap-3">
           {/* calories */}
           <div className="w-full py-2 border-b border-gray-300 flex items-center gap-2">
             <MdFoodBank className="text-gray-700 text-2xl" />
             <input
               type="text"
-              required
               value={calories}
               onChange={(e) => setCalories(e.target.value)}
               placeholder="Calories"
@@ -253,13 +312,14 @@ const CreateItem = () => {
         <div className="flex items-center w-full">
           <button
             type="button"
-            className="ml-0 md:ml-auto w-full md:w-auto border-none outline-none bg-emerald-500 px-12 py-2 rounded-lg text-lg text-white font-semibold"
+            disabled={!validate()}
+            className="disabled:opacity-40 ml-0 md:ml-auto w-full md:w-auto border-none outline-none bg-emerald-500 px-12 py-2 rounded-lg text-lg text-white font-semibold"
             onClick={saveDetails}
           >
             Save
           </button>
         </div>
-      </div>
+      </form>
     </div>
   );
 };
